@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AuthenticationService
+namespace MapServiceModel
 {
     public class Class1
     {
