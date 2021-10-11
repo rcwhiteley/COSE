@@ -2,6 +2,6 @@
 {
     public abstract class MessageProvider<T>
     {
-        public abstract IIncomingMessage<T> Create(ushort messageType);
+        public abstract Message<T> Create(ushort messageType);
     }
 }

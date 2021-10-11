@@ -15,7 +15,7 @@ namespace Kernel.Net.Messages
         private Pipe dataPipe;
         private PipeWriter dataWriter;
         private PipeReader dataReader;
-        public event EventHandler<IIncomingMessage<T>> MessageParsed;
+        public event EventHandler<Message<T>> MessageParsed;
         public event EventHandler<ReadOnlySequence<byte>> DataDiscarded;
         public int SealLength { get; set; } // TQServer seal
         public MessageParser(MessageProvider<T> messageProvider, int sealLength)
@@ -49,7 +49,7 @@ namespace Kernel.Net.Messages
                     var messageData = result.Buffer.Slice(0, len);
                     if (message != null)
                     {
-                        message.Deserialize(messageData);
+                        message.Deserialize(new MessageReader(messageData));
                         OnMessageParsed(message);
                     }
                     else
@@ -69,7 +69,7 @@ namespace Kernel.Net.Messages
             handler?.Invoke(this, messageData);
         }
 
-        protected virtual void OnMessageParsed(IIncomingMessage<T> message)
+        protected virtual void OnMessageParsed(Message<T> message)
         {
             var handler = MessageParsed;
             handler?.Invoke(this, message);

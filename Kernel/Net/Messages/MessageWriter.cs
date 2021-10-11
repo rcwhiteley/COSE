@@ -116,6 +116,18 @@ namespace Kernel.Net.Messages
             new Span<byte>(buffer, 0, copyLen).CopyTo(Memory.Span.Slice(Offset));
             Offset += length;
         }
+        
+        public void Write(byte[] value)
+        {
+            new Span<byte>(value).CopyTo(Memory.Span.Slice(Offset));
+            Offset += value.Length;
+        }
+
+        public void Write(byte[] value, int size)
+        {
+            new Span<byte>(value, 0, size).CopyTo(Memory.Span.Slice(Offset));
+            Offset += size;
+        }
 
         public void Write(IEnumerable<string> strings)
         {

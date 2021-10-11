@@ -4,6 +4,7 @@ using System;
 using System.IO.Pipelines;
 using System.Net.Sockets;
 using Kernel.Net.Messages;
+using System.Threading.Tasks;
 
 namespace AccountService.Net
 {
@@ -44,11 +45,10 @@ namespace AccountService.Net
             log.Debug("{serverName}: Client with Guid {guid} failed to find a message structure for message type {messageType}", Context.Name, Guid, BitConverter.ToUInt16(e.Slice(2).FirstSpan));
         }
 
-        private void MessageParser_MessageParsed(object sender, IIncomingMessage<Client> e)
+        private void MessageParser_MessageParsed(object sender, Message<Client> e)
         {
             log.Debug("{serverName}: Client with Guid {guid} succesfully parsed a message with type {messageType}", Context.Name, Guid, e.Type);
-            e.Owner = this;
-            Context.WorkerPool.Enqueue(e);
+            Context.WorkerPool.Enqueue(() => e.Process(this));
         }
 
         private void Client_PreparingSend(object sender, SocketAsyncEventArgs e)
@@ -59,7 +59,9 @@ namespace AccountService.Net
         private async void Client_Received(object sender, SocketAsyncEventArgs e)
         {
             decoder.Decode(e.MemoryBuffer.Span);
+            await Task.Delay(3000);
             await messageParser.ThrowBytes(e.MemoryBuffer.Slice(0, e.BytesTransferred));
+            await Task.Delay(3000);
             channel.ReceiveAsync();
         }
 

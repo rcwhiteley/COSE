@@ -21,7 +21,7 @@ namespace Kernel.Net.Messages.Tests
         {
             buffer = new byte[1024];
             memory = new Memory<byte>(buffer);
-            reader = new MessageReader(memory);
+            //reader = new MessageReader(memory);
             writer = new BinaryWriter(new MemoryStream(buffer), Encoding.ASCII);
         }
         [TestMethod()]
@@ -120,8 +120,8 @@ namespace Kernel.Net.Messages.Tests
         {
             writer.Write(Encoding.ASCII.GetBytes(val1));
             writer.Write(Encoding.ASCII.GetBytes(val2) );
-            Assert.AreEqual(val1, reader.ReadCString(val1.Length));
-            Assert.AreEqual(val2, reader.ReadCString(val2.Length));
+            Assert.AreEqual(val1, reader.ReadString(val1.Length));
+            Assert.AreEqual(val2, reader.ReadString(val2.Length));
         }
 
         [DataRow("Hello", "World")]

@@ -10,7 +10,7 @@ namespace Kernel.Threading
     //TODO: change class to use delegates instead of interfaces, maybe extend it to support both and keep legacy support?
     public class WorkerPool
     {
-        private Channel<IProcessable> channel = Channel.CreateUnbounded<IProcessable>();
+        private Channel<Action> channel = Channel.CreateUnbounded<Action>();
 
         public WorkerPool(int threadCount = 1)
         {
@@ -25,12 +25,12 @@ namespace Kernel.Threading
         {
             while(true)
             {
-                IProcessable action = await channel.Reader.ReadAsync();
-                action?.Process();
+                Action action = await channel.Reader.ReadAsync();
+                action?.Invoke();
             }
         }
 
-        public void Enqueue(IProcessable action)
+        public void Enqueue(Action action)
         {
             channel.Writer.TryWrite(action);
         }

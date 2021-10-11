@@ -1,8 +1,11 @@
 ﻿using AccountService;
 using AccountService.Net;
+using AccountService.Net.Packets;
 using Kernel.Net;
 using Kernel.Net.Messages;
+using Kernel.Serialization;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -19,7 +22,6 @@ namespace ServiceHost
         public TcpServer server;
         public AuthenticationServiceHost()
         {
-            Memory<byte> mem;
             server = new TcpServer();
             server.Bind(new System.Net.IPEndPoint(IPAddress.Any, 9958));
             server.Listen(100);
@@ -28,6 +30,7 @@ namespace ServiceHost
             server.StartAccept(null);
 
         }
+
 
         private void Server_Accepted(object sender, System.Net.Sockets.SocketAsyncEventArgs e)
         {

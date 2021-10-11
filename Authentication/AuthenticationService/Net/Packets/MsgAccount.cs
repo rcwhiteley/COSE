@@ -4,37 +4,34 @@ using System.Text;
 using System.Buffers;
 using Kernel.Net.Security;
 using System.Runtime.InteropServices;
+using Kernel.Serialization;
 
 namespace AccountService.Net.Packets
 {
-
-    // message structure from https://gitlab.com/conquer-online/wiki/-/wikis/Packets/MsgAccount
     [Message(1051)]
-    public unsafe class MsgAccount : IIncomingMessage<Client>
+    public unsafe class MsgAccount : Message<MsgAccount, Client>
     {
-        public Client Owner { get; set; }
-        public ushort Length { get => msg.Length; set => msg.Length = value; }
-        public ushort Type { get => msg.Type; set => msg.Type = value; }
-        private MessageData msg;
+        [Serialize(0)]
+        public override ushort Length { get; set; }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        private struct MessageData
+        [Serialize(1)]
+        public override ushort Type { get; set; }
+
+        [Serialize(2, FixedLength = 16)]
+        public string Username { get; set; }
+
+        [Serialize(3, FixedLength = 16)]
+        public byte[] Password { get; set; }
+
+        [Serialize(4, FixedLength = 16)] 
+        public string ServerName { get; set; }
+
+        public override void Process(Client owner)
         {
-            public ushort Length;
-            public ushort Type;
-            public fixed byte Username[16];
-            public fixed byte Password[16];
-            public fixed byte ServerName[16];
+            new RivestCipher5().Decode(Password);
+
+            Console.WriteLine($"{Username} {Encoding.ASCII.GetString(Password)} {ServerName}");
         }
 
-        public void Deserialize(ReadOnlySequence<byte> memory)
-        {
-
-        }
-
-        public void Process()
-        {
-            //throw new NotImplementedException();
-        }
     }
 }

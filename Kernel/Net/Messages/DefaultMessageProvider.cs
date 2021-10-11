@@ -9,7 +9,7 @@ namespace Kernel.Net.Messages
 {
     public class MessageAttribute : Attribute
     {
-        public ushort MessageType { get; }
+        public ushort MessageType { get; set; }
 
         public MessageAttribute(ushort messageType)
         {
@@ -18,14 +18,14 @@ namespace Kernel.Net.Messages
     }
     public class DefaultMessageProvider<T> : MessageProvider<T>
     {
-        Func<ushort, IIncomingMessage<T>> generator;
+        Func<ushort, Message<T>> generator;
         
         public DefaultMessageProvider(Assembly assembly)
         {
             CreateCtors(assembly);
         }
 
-        public override IIncomingMessage<T> Create(ushort messageType)
+        public override Message<T> Create(ushort messageType)
         {
             return generator.Invoke(messageType);
         }
@@ -34,10 +34,10 @@ namespace Kernel.Net.Messages
         {
             var messageTypeArg = Expression.Parameter(typeof(ushort), "messageType");
            // var @switch = Expression.Switch(messageTypeArg);
-            var result = Expression.Variable(typeof(IIncomingMessage<T>), "result");
+            var result = Expression.Variable(typeof(Message<T>), "result");
             List<SwitchCase> switchCases = new List<SwitchCase>();
-            var def = Expression.Assign(result, Expression.Constant(null, typeof(IIncomingMessage<T>)));
-            var types = asm.GetTypes().Where(t => t.GetInterfaces().Any(baseType => baseType == typeof(IIncomingMessage<T>)));
+            var def = Expression.Assign(result, Expression.Constant(null, typeof(Message<T>)));
+            var types = asm.GetTypes().Where(t => t.GetCustomAttribute<MessageAttribute>() != null);
             foreach (var type in types)
             {
                 //var createMethod = type.BaseType.GetMethod("Create", BindingFlags.Public | BindingFlags.Static);
@@ -53,7 +53,7 @@ namespace Kernel.Net.Messages
             var switchExpression = Expression.Switch(messageTypeArg, def, switchCases.ToArray());
             var ret = Expression.Assign(result, result);
             var methodBody = Expression.Block(new[] { result }, switchExpression, ret);
-            generator = Expression.Lambda<Func<ushort, IIncomingMessage<T>>>(methodBody, messageTypeArg).Compile();
+            generator = Expression.Lambda<Func<ushort, Message<T>>>(methodBody, messageTypeArg).Compile();
 
         }
     }
